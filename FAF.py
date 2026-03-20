@@ -1,22 +1,41 @@
+#Ahora el problema es que tengo que hacer que idetnifique un operador or | por ejemplo A -> a|b
+
 terminals = {"id","num","string",":","+","-","*","/","=","==","!=","<",">","(",")"}
 
 def makegramatic():
     rulesQuantity = int(input("¿Cuántas reglas de producción necesita? \n"))
     #Esta es la lista de una sola regla, si esta es S' -> S la lista debería ser ["S'", "->", "S"]
+    splitRule = ""
 
     listOfRules = {}
-
+    rulesOfRules = []
     #Tengo que utilizar la función match para hacer un switch case
     #Para ello supongo que lo mejor sería ponerlo dentro del for ya que este representa la cantidad de relgas que hay
     #¿O quizás lo mejor sería hacer otro for anidado?
     for i in range(0,rulesQuantity):
+        listRule = []
         #Inicializar y reinicializar con cada iteración
+        print("------------------------------Nueva regla---------------------------------")
         lr = input("¿Cuál es el lado izquierdo de la regla de producción? (Ejemplo: S') \n")
         #Es obligatorio que la regla de producción tenga un produce (->)
         #El lado derecho es lo que puede ser más de uno, ¿pongo otro for?
         rr = input("¿Cuál es o cuáles son sus reglas de la derecha? (Ejemplo S, id:S, EE) \n")
-        listRule = list(rr)
-        refineList(listRule)
+        splitRule = rr.split("|")
+
+        #Tengo que verificar que splitRule sea una lista tal que así ["i","d",":","S","|","b"]
+
+        for rule in splitRule:
+            result = refineList(list(rule))
+            listRule.append(result)
+
+        # beyondOr.append(splitRule[1])
+
+        # rule = list(splitRule[0])   
+        # print(rule)
+        # refineList(rule)
+
+        # listRule.append(rule)
+        # listRule.append(beyondOr)
         #singleRule.append(rr) Tal vez poner la lista en como estaba antes me sirve de algo en el futuro
         listOfRules[lr] = listRule
     #Por el momento solo es capaz de imprimir una regla con solo un estado por ejemplo S' -> S
@@ -63,6 +82,7 @@ def refineList(listRr):
             listRr.insert(oldIndex, aux)
             aux = ""
             i += 1 
+    return listRr
 
 def verifyTerminal(rightRules):
     #Aquí buscará letras como + - * / pero solo una letra si es que eso se le llaman letras
