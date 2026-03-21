@@ -1,0 +1,11 @@
+En teoría esta gramática es buena para testear first and follow
+
+Regla 1 (E): T E'
+
+Regla 2 (E'): + T E' | ε
+
+Regla 3 (T): F T'
+
+Regla 4 (T'): * F T' | ε
+
+Regla 5 (F): ( E ) | id	
