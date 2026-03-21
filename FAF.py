@@ -15,7 +15,7 @@ def makegramatic():
     for i in range(0,rulesQuantity):
         listRule = []
         #Inicializar y reinicializar con cada iteración
-        print(f'------------------------------Regla {i}---------------------------------')
+        print(f'------------------------------Regla {i + 1}---------------------------------')
         lr = input("¿Cuál es el lado izquierdo de la regla de producción? (Ejemplo: S') \n")
         #Es obligatorio que la regla de producción tenga un produce (->)
         #El lado derecho es lo que puede ser más de uno, ¿pongo otro for?
