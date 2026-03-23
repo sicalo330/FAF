@@ -1,3 +1,4 @@
+#Todas las ayudas de la IA que se ven en los comentarios fueron solo recomendaciones o instrucciones lógicas que me daban nunca fue código en bruto
 #Ahora el problema es que tengo que hacer que idetnifique un operador or | por ejemplo A -> a|b
 
 terminals = {"id","num","string",":","+","-","*","/","=","==","!=","<",">","(",")"}
@@ -14,7 +15,7 @@ def makegramatic():
     for i in range(0,rulesQuantity):
         listRule = []
         #Inicializar y reinicializar con cada iteración
-        print(f'------------------------------Regla {i}---------------------------------')
+        print(f'------------------------------Regla {i + 1}---------------------------------')
         lr = input("¿Cuál es el lado izquierdo de la regla de producción? (Ejemplo: S') \n")
         #Es obligatorio que la regla de producción tenga un produce (->)
         #El lado derecho es lo que puede ser más de uno, ¿pongo otro for?
@@ -38,6 +39,10 @@ def refineList(listRr):
     oldIndex = 0
     i = 0
     #Quería usar for con lal ista pero el pop hace que las interaciones tengan problemas
+    #Primera ayuda de la IA: Chatgpt no me dio el código, solo me recomendó usar un while en vez de un for
+    #Si anteriormente se usaba un for aquí, no estoy muy seguro si algun commit lo tiene registrado
+    #Lo que sucedió fue que yo estaba iterando en la misma lista que estaba alterando para poder refinar las terminales y no terminales de la lista
+    #Y eso resultaba en errores de lógica, por lo tanot chatgpt NO me dio código, solo me dijo que usara un while en vez de un for
     while i < len(listRr):
         rr = listRr[i]
         #Si la letra que viene NO es mayuscula se continua iterando
@@ -67,6 +72,8 @@ def refineList(listRr):
             i += 1 
     return listRr
 
+#Segunda ayuda de la IA: gemini me recomendó usar set en vez de una lista corriente ya que los first o los follows pueden tener duplicados redundantes
+#Además con los sets se puede usar update que es el equivalente de una unión de conjuntos tal y como lo dice el librro
 def first(key, rProductions, firstResults):
     #Me gustaría un if que devuelva si ya se calculo, para optimizar jeje
     if key in firstResults:
@@ -75,7 +82,7 @@ def first(key, rProductions, firstResults):
     firsts = set()
     #Si es un terminal
     if key not in rProductions:
-        print("Entró " + key)
+        # print("Entró " + key)
         return {key}
     
     #Si es un no terminal
@@ -88,13 +95,10 @@ def first(key, rProductions, firstResults):
                 #De forma recursiva
                 resultsChar = first(char, rProductions, firstResults)
                 if 'ε' in resultsChar:
-                    #Si tiene epsilon, agregamos todo lo demás y seguimos al siguiente token
                     firsts.update(resultsChar - {'ε'})
-                    #Si es el último token y todos tuvieron epsilon, agregamos epsilon al padre
                     if char == produccion[-1]:
                         firsts.add('ε')
                 else:
-                    #Si no tiene epsilon, agregamos y rompemos el flujo de esta producción
                     firsts.update(resultsChar)
                     break
     
@@ -120,14 +124,14 @@ def follow(rProductions, firstResults):
     followResults[simboloInicial].add('$')
     
     #Esto repiute hasta que los conjuntos de Fllow dejen de crecer
-    huboCambios = True
-    while huboCambios:
-        huboCambios = False
+    changes = True
+    while changes:
+        changes = False
         #Guardamos cuántos elementos había antes de empezar esta vuelta
         totalElementosAntes = sum(len(s) for s in followResults.values())
         
         #Recorremos cada No Terminal(A) y sus producciones
-        for nt_padre, producciones in rProductions.items():
+        for key, producciones in rProductions.items():
             for produccion in producciones:
                 #Analizamos cada símbolo(B) dentro de la producción: A -> alpha B beta
                 for i in range(len(produccion)):
@@ -158,17 +162,16 @@ def follow(rProductions, firstResults):
                                     break
                             else:
                                 # Si TODOS en beta eran nullable → hereda FOLLOW del padre
-                                followResults[B].update(followResults[nt_padre])
+                                followResults[B].update(followResults[key])
                         
                         #B está al final de la producción (A -> alpha B) ---
                         else:
-                            # B hereda todo el FOLLOW de su padre (A)
-                            followResults[B].update(followResults[nt_padre])
-                            
+                            #Si B lleó hasta aquí significará que heredará el follow de su padre PENDIENTE DE ESTE
+                            followResults[B].update(followResults[key])
         # Si al final de la vuelta hay más elementos que antes, seguimos iterando
         totalElementosDespues = sum(len(s) for s in followResults.values())
         if totalElementosDespues > totalElementosAntes:
-            huboCambios = True
+            changes = True
             
     return followResults
 
@@ -208,6 +211,9 @@ if __name__ == "__main__":
         print(f"{key}: {valores}")
 
 #Ok, al parecer la lista de reglas no debería ser así:["S", "->", "id:S"] sino así
+
+#Tercera ayuda de la IA: Noah del pasado escribió esto, y sí al parecer poner la gramática como está abajo ayuda mucho más porque es más fácil acceder, menos mal no seguí
+#con lo de ariba
 """
 Así{
   "S": [["A", "B"]],
