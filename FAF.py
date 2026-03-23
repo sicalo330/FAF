@@ -101,52 +101,66 @@ def first(key, rProductions, firstResults):
     firstResults[key] = firsts
     return firsts
 
+def getNullable(firstResults):
+    nullable = set()
+    
+    for nt, firstSet in firstResults.items():
+        if 'ε' in firstSet:
+            nullable.add(nt)
+    
+    return nullable
+
 def follow(rProductions, firstResults):
-    # 1. Inicializamos el diccionario de FOLLOW con sets vacíos para cada No Terminal
+    #Inicializamos el diccionario de FOLLOW con sets vacíos para cada no terminal
     followResults = {nt: set() for nt in rProductions}
     
-    # 2. Regla de Oro: El símbolo inicial siempre lleva el símbolo de fin de cadena '$'
-    # Tomamos la primera llave del diccionario como símbolo inicial
+    # El símbolo inicial siempre lleva el símbolo de fin de cadena "$""
+    #Tomamos la primera llave del diccionario como símbolo inicial
     simboloInicial = list(rProductions.keys())[0]
     followResults[simboloInicial].add('$')
     
-    # 3. Bucle Iterativo: Repetimos hasta que los conjuntos de FOLLOW dejen de crecer
+    #Esto repiute hasta que los conjuntos de Fllow dejen de crecer
     huboCambios = True
     while huboCambios:
         huboCambios = False
-        # Guardamos cuántos elementos había antes de empezar esta vuelta
+        #Guardamos cuántos elementos había antes de empezar esta vuelta
         totalElementosAntes = sum(len(s) for s in followResults.values())
         
-        # Recorremos cada No Terminal (A) y sus producciones
+        #Recorremos cada No Terminal(A) y sus producciones
         for nt_padre, producciones in rProductions.items():
             for produccion in producciones:
-                # Analizamos cada símbolo (B) dentro de la producción: A -> alpha B beta
+                #Analizamos cada símbolo(B) dentro de la producción: A -> alpha B beta
                 for i in range(len(produccion)):
                     B = produccion[i]
                     
                     # Solo nos interesa el FOLLOW de los No Terminales
                     if B in rProductions:
-                        # --- CASO 1: ¿Hay algo después de B? (beta) ---
+                        #Esto pregunta si hay algo después del símbolo que se le quiere buscar el FOLLOW-
                         if i + 1 < len(produccion):
+                            #El : del final significa que toma toda la lista i+1 y todo lo que queda en la derechs
+                            #Esto hace β = Yi+1 … Yk del libro, recorre toda la cadena de busqueda
                             beta = produccion[i+1:]
-                            
-                            # Calculamos el FIRST de todo lo que sigue (beta)
-                            # Para simplificar: tomamos el FIRST del símbolo inmediato siguiente
-                            primer_sig = produccion[i+1]
-                            
-                            if primer_sig in rProductions:
-                                # Si lo que sigue es No Terminal, le pedimos su FIRST
-                                f_sig = firstResults[primer_sig]
-                                followResults[B].update(f_sig - {'ε'})
-                                
-                                # Si ese FIRST tiene épsilon, B también hereda el FOLLOW del padre (A)
-                                if 'ε' in f_sig:
-                                    followResults[B].update(followResults[nt_padre])
+                            #Recorremos toda la cadena
+                            for simbolo in beta:
+                                #Busca si el símbolo es una key en alguna regla de producción
+                                if simbolo in rProductions:
+                                    f_sig = firstResults[simbolo]
+                                    followResults[B].update(f_sig - {'ε'})
+                                    
+                                    #SI NO hay epsilon, el código se detiene
+                                    #Caso 1:  SI el símbolo que estaba a la derecha tuvo un epsilon hay que ir hasta el otro símbolo a la derecha
+                                    #Caso 2: Si el símbolo No estaba ahí, entonces se rompe el ciclo porque ya no es necesario revisar más
+                                    if 'ε' not in f_sig:
+                                        break
+                                else:
+                                    #Si llegó a este else es porque es un terminal y se agrega normal
+                                    followResults[B].add(simbolo)
+                                    break
                             else:
-                                # Si lo que sigue es un Terminal, se agrega directo al FOLLOW de B
-                                followResults[B].add(primer_sig)
+                                # Si TODOS en beta eran nullable → hereda FOLLOW del padre
+                                followResults[B].update(followResults[nt_padre])
                         
-                        # --- CASO 2: B está al final de la producción (A -> alpha B) ---
+                        #B está al final de la producción (A -> alpha B) ---
                         else:
                             # B hereda todo el FOLLOW de su padre (A)
                             followResults[B].update(followResults[nt_padre])
@@ -170,18 +184,26 @@ def verifyTerminal(rightRules):
 
 if __name__ == "__main__":
     result = makegramatic()
+
+    #Calcular first
     firstResults = {}
     for key in result:
         first(key, result, firstResults)
 
-    print("FIRST: \n")
+    print("\nFirst:")
     for key, valores in firstResults.items():
         print(f"{key}: {valores}")
     
-    # Calcular FOLLOW
+    nullableSet = getNullable(firstResults)
+
+    print("\nNullable")
+    for nt in nullableSet:
+        print(nt)
+    
+    #Calcular follow
     resultsFollow = follow(result, firstResults)
 
-    print("FOLLOW: \n")
+    print("\nFollow:")
     for key, valores in resultsFollow.items():
         print(f"{key}: {valores}")
 
