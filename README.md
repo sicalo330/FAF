@@ -9,3 +9,5 @@
 ### Al compilar, se le pedirá cuántas reglas de producción se necesita, solo ponga los necesarios
 
 # ESTE PASO ES IMPORTANTE: Cuando ponga la gramática, sobre todo las reglas de la derecha debe ser con espacios, es decir, si quiere poner S -> ABC, en consola tiene que poner A B C con espacios
+
+# Se puede usar la gramática puesta en el archivo de texto santoGrial.txt para poder testear la gramática
