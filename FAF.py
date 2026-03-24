@@ -1,7 +1,7 @@
 #Todas las ayudas de la IA que se ven en los comentarios fueron solo recomendaciones o instrucciones lógicas que me daban nunca fue código en bruto
 #Ahora el problema es que tengo que hacer que idetnifique un operador or | por ejemplo A -> a|b
 
-terminals = {"id","num","string",":","+","-","*","/","=","==","!=","<",">","(",")"}
+#terminals = {"id","num","string",":","+","-","*","/","=","==","!=","<",">","(",")"}
 
 def makegramatic():
     rulesQuantity = int(input("¿Cuántas reglas de producción necesita? \n"))
@@ -34,48 +34,10 @@ def makegramatic():
     #Dentro de otral lista más grande para poder ciclar en todas las reglas
     return listOfRules
 
-def refineList(listRr):
-    aux = ""
-    oldIndex = 0
-    i = 0
-    #Quería usar for con lal ista pero el pop hace que las interaciones tengan problemas
-    #Primera ayuda de la IA: Chatgpt no me dio el código, solo me recomendó usar un while en vez de un for
-    #Si anteriormente se usaba un for aquí, no estoy muy seguro si algun commit lo tiene registrado
-    #Lo que sucedió fue que yo estaba iterando en la misma lista que estaba alterando para poder refinar las terminales y no terminales de la lista
-    #Y eso resultaba en errores de lógica, por lo tanot chatgpt NO me dio código, solo me dijo que usara un while en vez de un for
-    while i < len(listRr):
-        rr = listRr[i]
-        #Si la letra que viene NO es mayuscula se continua iterando
-        if rr.isupper():
-            i += 1
-            continue
-
-        isterminal = verifyTerminal(rr)
-
-        #Si verifyTerminal encontró una terminal entonces se puede seguir a la siguiente palabra
-        if isterminal:
-            i += 1
-            continue
-        #Si llegó hasta aquí fue porque tuvo que haber encontrado alguna letra minuscula
-        aux += rr
-        oldIndex = i
-
-        #Se elimina la letra en la posición en la que estaba eso significa que si tenemos ["i","d"] se eliminaría ambos
-        #Sin embargo al final de todo esto se concatenan las letras y se verifican lo que hace que tengamos ["id"]
-        listRr.pop(i)
-        isterminal = verifyTerminal(aux)
-
-        #Si la palabra formada es terminal se debe poner como reemplazo
-        if isterminal:
-            listRr.insert(oldIndex, aux)
-            aux = ""
-            i += 1 
-    return listRr
-
 #Segunda ayuda de la IA: gemini me recomendó usar set en vez de una lista corriente ya que los first o los follows pueden tener duplicados redundantes
 #Además con los sets se puede usar update que es el equivalente de una unión de conjuntos tal y como lo dice el librro
 def first(key, rProductions, firstResults):
-    #Me gustaría un if que devuelva si ya se calculo, para optimizar jeje
+    #Este if es para cuando llegue al follow
     if key in firstResults:
         return firstResults[key]
     #No sé muy bien qué estoy haciendo
@@ -115,8 +77,12 @@ def getNullable(firstResults):
     return nullable
 
 def follow(rProductions, firstResults):
-    #Inicializamos el diccionario de FOLLOW con sets vacíos para cada no terminal
-    followResults = {nt: set() for nt in rProductions}
+    #Inicializamos el diccionario de follow con sets vacíos para cada no terminal
+    #SI ALGO FALLA POSIBLEMENTE ESTÉ AQUÍ   
+    followResults = {}
+
+    for nt in rProductions:
+        followResults[nt] = set()
     
     # El símbolo inicial siempre lleva el símbolo de fin de cadena "$""
     #Tomamos la primera llave del diccionario como símbolo inicial
@@ -174,16 +140,6 @@ def follow(rProductions, firstResults):
             changes = True
             
     return followResults
-
-def verifyTerminal(rightRules):
-    #Aquí buscará letras como + - * / pero solo una letra si es que eso se le llaman letras
-    terminalFounded = False
-    for terminal in terminals:
-        #Si la letra que vino 
-        if(rightRules == terminal):
-            terminalFounded = True
-            break
-    return terminalFounded
 
 if __name__ == "__main__":
     result = makegramatic()
